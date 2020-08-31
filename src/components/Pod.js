@@ -1,6 +1,13 @@
 import React from 'react';
 class Pod extends React.Component {
-  state = { name: '',image: '',port:'', log:'', list: [], select: ''};
+  state = {ns:[],
+          selectNS:'',
+          name: '',
+          image: '',
+          port:'',
+          log:'',
+          list: [],
+          select: ''};
   onNameChange =event=>{
     this.setState({ name: event.target.value });
   };
@@ -10,15 +17,23 @@ class Pod extends React.Component {
   onPortChange =event=>{
     this.setState({ port: event.target.value });
   };
+  onSelectNS=event=>{
+    let sel = event.target.value === "Select A NameSpace" ? "default" : event.target.value;
+    this.setState({selectNs:sel});
+    this.getPodList(sel);
+  }
   onSelect =event=>{
     this.setState({select:event.target.value});
   }
-  getPodList=()=>{
+  async componentDidMount(){
+    this.fetchNameSpaceList();
+  }
+  getPodList=(namespace)=>{
     let requestOptions = {
       method: 'GET',
       redirect: 'follow'
     };
-    const url = "http://127.0.0.1:8000//api/v1/namespaces/default/pods";
+    const url = `http://127.0.0.1:8000//api/v1/namespaces/${namespace}/pods`;
     fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
@@ -31,6 +46,20 @@ class Pod extends React.Component {
   onFormSubmit = event => {
     event.preventDefault();
   };
+  fetchNameSpaceList=()=>{
+    let requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    const url = "http://127.0.0.1:8000//api/v1/namespaces/";
+    fetch(url, requestOptions)
+      .then(response => response.text())
+      .then(result => {
+        this.setState({ns:(JSON.parse(result).items)});
+      })
+      .catch(error => console.log('error', error));
+      
+  }
   deletePod = ()=>{
     if (this.state.select===''){
       alert('Please choose a pod..');
@@ -119,6 +148,14 @@ class Pod extends React.Component {
     return (
         <div className="ui segment">
         <form onSubmit={this.onFormSubmit} className="ui form">
+        <h3>Select a Namespace: </h3>
+        <select className="ui dropdown" onChange={this.onSelectNS}>
+          <option value="">Select A Namespace</option>
+          {this.state.ns.map(item=>{
+            return <option value={item.metadata.name} key={item.metadata.name}>{item.metadata.name}</option>
+          })}
+        </select>
+        <br/>
             <div className="fields">
               <div className="field">
                 <label>Pod name:</label>
@@ -142,14 +179,15 @@ class Pod extends React.Component {
               </div>
             </div>
         </form>
-        <select className="ui dropdown" onChange={this.onSelect}>
+        <div className="fields">
+        <select className="ui dropdown field" onChange={this.onSelect}>
           <option value="">Select A Pod</option>
           {this.state.list.map(item=>{
             return <option value={item.metadata.name} key={item.metadata.name}>{item.metadata.name}</option>
           })}
         </select>
+        </div>
         <br/><br/>
-        <button className="ui button" onClick={this.getPodList}>List</button> 
         {this.renderList()}
         <h3>Response log:</h3>
         <pre>
