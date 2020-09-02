@@ -1,6 +1,23 @@
 import React from 'react';
+import File from 'react-files';
 class Deployment extends React.Component {
-  state = { name: '', replicas:0, image: '',port:'', log:'', list: [], select: ''};
+  constructor(props){
+    super(props);
+    this.state = { name: '',
+            replicas:0,
+            image: '',
+            port:'',
+            log:'',
+            list: [],
+            select: '',
+            fileContent: ''};
+    this.fileReader = new FileReader();
+    this.fileReader.onload = event =>{
+      this.setState({fileContent:JSON.parse(this.fileReader.result)},()=>{
+        console.log(this.state.fileContent);
+      });
+    }
+  }
   onNameChange =event=>{
     this.setState({ name: event.target.value });
   };
@@ -196,10 +213,25 @@ class Deployment extends React.Component {
     </table>
     )
   }
+  onFileSubmit=(files)=>{
+    this.fileReader.readAsText(files);
+  }
+  onFileError=()=>{
+    alert("unsuitable file");
+  }
   render() {
     return (
         <div className="ui segment">
         <form onSubmit={this.onFormSubmit} className="ui form">
+          <h3>Upload a config file</h3>
+          <File className="ui segment"
+            clickable
+            onChange={files => this.onFileSubmit(files[0])}
+            onError={this.onFileError}
+            accepts={['.json']}
+            multiple
+          >Click or drop your config file(json) here</File>
+          <br/>
             <div className="fields">
               <div className="field">
                 <label>Deployment name:</label>
