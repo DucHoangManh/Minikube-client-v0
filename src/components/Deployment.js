@@ -1,9 +1,13 @@
 import React from 'react';
 import File from 'react-files';
+import SelectNamespace from './Common/SelectNamespace';
+
 class Deployment extends React.Component {
   constructor(props){
     super(props);
-    this.state = { name: '',
+    this.state = { 
+            namespace: '',
+            name: '',
             replicas:0,
             image: '',
             port:'',
@@ -14,13 +18,9 @@ class Deployment extends React.Component {
     this.fileReader = new FileReader();
     this.fileReader.onload = event =>{
       this.setState({fileContent:JSON.parse(this.fileReader.result)},()=>{
-        //console.log(JSON.stringify(this.state.fileContent));
         this.createDeploymentFromFile();
       });
     }
-  }
-  componentDidMount(){
-    this.getDeploymentList();
   }
   onNameChange =event=>{
     this.setState({ name: event.target.value });
@@ -37,16 +37,18 @@ class Deployment extends React.Component {
   onSelect =event=>{
     this.setState({select:event.target.value});
   }
+  onNamespaceSelect=async (ns)=>{
+    this.setState({namespace:ns},()=>{this.getDeploymentList()});
+  }
   getDeploymentList=()=>{
     let requestOptions = {
       method: 'GET',
       redirect: 'follow'
     };
-    const url = "http://127.0.0.1:8000/apis/apps/v1/namespaces/default/deployments/";
+    const url = `http://127.0.0.1:8000/apis/apps/v1/namespaces/${this.state.namespace}/deployments/`;
     fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
-        this.setState({log:result});
         this.setState({list:(JSON.parse(result).items)});
       })
       .catch(error => console.log('error', error));
@@ -67,7 +69,7 @@ class Deployment extends React.Component {
       redirect: 'follow'
     };
     
-    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/default/deployments/${this.state.select}`, requestOptions)
+    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/${this.state.namespace}/deployments/${this.state.select}`, requestOptions)
       .then(response => response.text())
       .then(result => {
         this.setState({log:result});
@@ -123,7 +125,7 @@ class Deployment extends React.Component {
       redirect: 'follow'
     };
 
-    fetch("http://127.0.0.1:8000/apis/apps/v1/namespaces/default/deployments/", requestOptions)
+    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/${this.state.namespace}/deployments/`, requestOptions)
       .then(response => response.text())
       .then(result => {
         alert(JSON.parse(result).kind === "Deployment" ? "Successfully Created" : "Failure");
@@ -143,7 +145,7 @@ class Deployment extends React.Component {
       headers:myHeaders
     };
 
-    fetch("http://127.0.0.1:8000/apis/apps/v1/namespaces/default/deployments/", requestOptions)
+    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/${this.state.namespace}/deployments/`, requestOptions)
       .then(response => response.text())
       .then(result => {
         if (JSON.parse(result).status === "Failure" && JSON.parse(result).reason === "AlreadyExists"){
@@ -164,7 +166,7 @@ class Deployment extends React.Component {
       body: JSON.stringify(this.state.fileContent),
       redirect: 'follow'
     };
-    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/default/deployments/${this.state.fileContent.metadata.name}`, requestOptions)
+    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/${this.state.namespace}/deployments/${this.state.fileContent.metadata.name}`, requestOptions)
       .then(response => response.text())
       .then(result => {
         alert(JSON.parse(result).kind === "Deployment" ? "Successfully Updated" : "Failure");
@@ -228,7 +230,7 @@ class Deployment extends React.Component {
       body: raw,
       redirect: 'follow'
     };
-    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/default/deployments/${this.state.select}`, requestOptions)
+    fetch(`http://127.0.0.1:8000/apis/apps/v1/namespaces/${this.state.namespace}/deployments/${this.state.select}`, requestOptions)
       .then(response => response.text())
       .then(result => {
         alert(JSON.parse(result).kind === "Deployment" ? "Successfully Updated" : "Failure");
@@ -273,6 +275,7 @@ class Deployment extends React.Component {
     return (
         <div className="ui segment">
         <form onSubmit={this.onFormSubmit} className="ui form">
+          <SelectNamespace onNamespaceSelect={this.onNamespaceSelect}/>
           <h3>Upload a config file</h3>
           <File className="ui segment"
             clickable
@@ -320,7 +323,7 @@ class Deployment extends React.Component {
           })}
         </select>
         <br/><br/>
-        <button className="ui button" onClick={this.getDeploymentList}>Reset</button> 
+        <button className="ui button" onClick={this.getDeploymentList}>Refresh</button> 
         {this.renderList()}
         <h3>Response log:</h3>
         <pre>

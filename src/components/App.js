@@ -8,19 +8,17 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 class App extends React.Component {
   state = { videos: [], selectedVideo: null };
-
-//<SearchBar onFormSubmit={this.onTermSubmit} />
   render() {
     return (
       <Router>
         <div className="App ui segment">
         <h1 className="App-header">Kubernetes client</h1>
           <header className="ui pointing menu">
-              <Link className="ui item primary" to="/deployment">Deployments</Link>
-              <Link className="ui item primary" to="/statefulset">StatefulSet</Link>
-              <Link className="ui item primary" to="/daemonset">DaemonSet</Link>
-              <Link className="ui item primary" to="/pod">Pod</Link>
               <Link className="ui item primary" to="/ns">NameSpace</Link>
+              <Link className="ui item primary" to="/deployment">Deployments</Link>
+              <Link className="ui item primary" to="/pod">Pod</Link>
+              <Link className="ui item primary" to="/statefulset">StatefulSet</Link>
+              <Link className="ui item primary" to="/daemonset">DaemonSet</Link>             
           </header>
           <div>
             <Route exact path="/deployment" component={Deployment} />

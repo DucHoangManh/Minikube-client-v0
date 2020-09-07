@@ -23,19 +23,34 @@ class NameSpace extends React.Component {
     let requestOptions = {
       method: 'POST',
       body: ns,
+      headers: myHeaders,
       redirect: 'follow'
     };
-    const url = "http://127.0.0.1:8000//api/v1/namespaces/";
+    const url = "http://127.0.0.1:8000/api/v1/namespaces/";
     fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
         this.setState({log:result});
-        console.log(result);;
+        this.fetchNameSpaceList();
+        alert(JSON.parse(result).kind==="Namespace"?"Success":"Failure");
       })
       .catch(error => console.log('error', error));
-      this.fetchNameSpaceList();
   }
-
+  deleteNS=()=>{
+    let requestOptions = {
+      method: 'DELETE',
+      redirect: 'follow'
+    };
+    const url = `http://127.0.0.1:8000/api/v1/namespaces/${this.state.select}`;
+    fetch(url, requestOptions)
+      .then(response => response.text())
+      .then(result => {
+        this.setState({log:result});
+        this.fetchNameSpaceList();
+        alert(JSON.parse(result).kind==="Namespace"?"Success":"Failure");
+      })
+      .catch(error => console.log('error', error));
+  }
   componentDidMount() {
     this.fetchNameSpaceList(); 
   }
@@ -48,7 +63,6 @@ class NameSpace extends React.Component {
     fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
-        this.setState({log:result});
         this.setState({list:(JSON.parse(result).items)});
       })
       .catch(error => console.log('error', error));
