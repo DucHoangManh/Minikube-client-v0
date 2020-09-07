@@ -3,7 +3,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### `Before launching`
 
-Make sure you have minikube installed and running
+Make sure you have minikube installed and running<br>
 Enable the kubectl proxy
 
 ## Available Scripts
